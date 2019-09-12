@@ -46,7 +46,13 @@ def t2h(T, t):
     #------------------------------------------------------------------#
     # TODO: Implement conversion of a transformation matrix and a translation vector to homogeneous transformation matrix.
     # remove the 'pass' once implemented
-    pass
+    n = np.eye(3)
+    n[:2,:2]=T
+    n[:2,2]=t
+    Th = n
+    return Th
+    
+    #pass
     #------------------------------------------------------------------#
 
 

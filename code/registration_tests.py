@@ -11,6 +11,32 @@ from IPython.display import display, clear_output
 
 # SECTION 1. Geometrical transformations
 
+def image_order_example():
+    X = util.test_object(1)
+    
+    X_rot = reg.rotate(np.pi/2)
+    X_ref = reg.reflect(-1, 1)
+ 
+    X_rot_ref=X_ref.dot(X_rot.dot(X))
+    X_ref_rot=X_rot.dot(X_ref.dot(X))
+    
+    fig = plt.figure(figsize=(12,5))
+    ax1 = fig.add_subplot(141, xlim=(-4,4), ylim=(-4,4))
+    ax2 = fig.add_subplot(142, xlim=(-4,4), ylim=(-4,4))
+    ax3 = fig.add_subplot(143, xlim=(-4,4), ylim=(-4,4))
+
+    util.plot_object(ax1, X)
+    util.plot_object(ax2, X_rot_ref)
+    util.plot_object(ax3, X_ref_rot)
+
+    ax1.set_title('Original')
+    ax2.set_title('Rotation and then reflection')
+    ax3.set_title('Reflection and then rotation')
+
+    ax1.grid()
+    ax2.grid()
+    ax3.grid()
+
 def transforms_test():
 
     X = util.test_object(1)
@@ -44,10 +70,33 @@ def transforms_test():
 def combining_transforms():
 
     X = util.test_object(1)
+    
+    X_sh = reg.shear(0.1, 0.2)
+    X_rot = reg.rotate(np.pi/2)
+ 
+    X_sh_rot=X_rot.dot(X)
+    X_rot_sh=X_sh.dot(X)
+    
+    X_sh_rot=X_sh.dot(X_sh_rot)
+    X_rot_sh=X_rot.dot(X_rot_sh)
+    
+    fig = plt.figure(figsize=(12,5))
+    
+    ax1 = fig.add_subplot(141, xlim=(-4,4), ylim=(-4,4))
+    ax2 = fig.add_subplot(142, xlim=(-4,4), ylim=(-4,4))
+    ax3 = fig.add_subplot(143, xlim=(-4,4), ylim=(-4,4))
 
-    #------------------------------------------------------------------#
-    # TODO: Experiment with combining transformation matrices.
-    #------------------------------------------------------------------#
+    util.plot_object(ax1, X)
+    util.plot_object(ax2, X_sh_rot)
+    util.plot_object(ax3, X_rot_sh)
+
+    ax1.set_title('Original')
+    ax2.set_title('Shear and then rotation')
+    ax3.set_title('Rotation and then shear')
+
+    ax1.grid()
+    ax2.grid()
+    ax3.grid()
 
 
 def t2h_test():
@@ -79,6 +128,13 @@ def arbitrary_rotation():
 
     #------------------------------------------------------------------#
     # TODO: TODO: Perform rotation of the test shape around the first vertex
+    Xt=X[:,0]                            #translation vector to first vertex
+    X_rot = reg.rotate(np.pi/4)          #rotation matrix 45 degrees CCW
+    T_t=util.t2h(reg.identity(), -Xt)    #translation matrix to center from first vertex point
+    T_t_b=util.t2h(reg.identity(), Xt)   #translation matrix back to original
+    T_rot=util.t2h(X_rot, np.array([0,0]))  #rotation matrix homogeneous form
+    
+    T=T_t_b.dot(T_rot.dot(T_t)) #transformation matrix
     #------------------------------------------------------------------#
 
     X_rot = T.dot(Xh)
@@ -91,8 +147,7 @@ def arbitrary_rotation():
     ax1.grid()
 
 
-# SECTION 2. Image transformation and least squares fitting
-
+# SECTION 2. Image transformation and least squares fitting    
 def image_transform_test():
 
     I = plt.imread('../data/cameraman.tif')
