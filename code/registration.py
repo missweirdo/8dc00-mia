@@ -113,7 +113,7 @@ def image_transform(I, Th,  output_shape=None):
     Xh = util.c2h(X)
 
     #------------------------------------------------------------------#
-    # TODO: Perform inverse coordinates mapping.
+    Xt=np.linalg.inv(Th).dot(Xh)
     #------------------------------------------------------------------#
 
     It = ndimage.map_coordinates(I, [Xt[1,:], Xt[0,:]], order=1, mode='constant').reshape(I.shape)
@@ -131,7 +131,8 @@ def ls_solve(A, b):
     # E - squared error for the optimal solution
 
     #------------------------------------------------------------------#
-    # TODO: Implement the least-squares solution for w.
+    At=np.transpose(A)
+    w=(np.linalg.inv(At.dot(A)).dot(At)).dot(b)
     #------------------------------------------------------------------#
 
     # compute the error
@@ -153,6 +154,13 @@ def ls_affine(X, Xm):
     #------------------------------------------------------------------#
     # TODO: Implement least-squares fitting of an affine transformation.
     # Use the ls_solve() function that you have previously implemented.
+    Xm_T=np.transpose(Xm)
+    X_T=np.transpose(X)
+    w1,E1 = ls_solve(Xm_T,X_T[:,0])
+    w2,E2 = ls_solve(Xm_T,X_T[:,1])
+    T=np.eye(3)
+    T[0,:]=np.transpose(w1)
+    T[1,:]=np.transpose(w2)
     #------------------------------------------------------------------#
 
     return T
@@ -182,8 +190,14 @@ def correlation(I, J):
     #------------------------------------------------------------------#
     # TODO: Implement the computation of the normalized cross-correlation.
     # This can be done with a single line of code, but you can use for-loops instead.
-    #------------------------------------------------------------------#
 
+    u_T=np.transpose(u)
+    v_T=np.transpose(u)  
+    uv=(u_T.dot(v))
+    uu=(u_T.dot(u))
+    vv=(v_T.dot(v))
+    CC=uv/(np.sqrt(uu)*np.sqrt(vv))
+    #------------------------------------------------------------------#
     return CC
 
 
@@ -223,15 +237,19 @@ def joint_histogram(I, J, num_bins=16, minmax_range=None):
 
     # initialize the joint histogram to all zeros
     p = np.zeros(hist_size)
-
     for k in range(n):
         p[I[k], J[k]] = p[I[k], J[k]] + 1
+        
+        
+        
 
     #------------------------------------------------------------------#
     # TODO: At this point, p contains the counts of cooccuring
     # intensities in the two images. You need to implement one final
     # step to make p take the form of a probability mass function
     # (p.m.f.).
+    sumP=sum(sum(p))
+    p=p/sumP    
     #------------------------------------------------------------------#
 
     return p
@@ -263,8 +281,15 @@ def mutual_information(p):
     # can use a for-loop instead.
     # HINT: p_I is a column-vector and p_J is a row-vector so their
     # product is a matrix. You can also use the sum() function here.
+    n = p_I.shape[0]
+    
+    MI=0
+    for i in range(n):
+        for j in range(n):
+            pipj=p_I[i,0]*p_J[0,j]
+            pipj=p[i,j]/pipj
+            MI=MI+(p[i,j]*(np.log(pipj)))
     #------------------------------------------------------------------#
-
     return MI
 
 
@@ -292,6 +317,8 @@ def mutual_information_e(p):
     #------------------------------------------------------------------#
     # TODO: Implement the computation of the mutual information via
     # computation of entropy.
+    
+    MI=-np.sum(p*np.log2(p))
     #------------------------------------------------------------------#
 
     return MI
